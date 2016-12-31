@@ -2,8 +2,11 @@ package test;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -15,16 +18,19 @@ import java.util.TreeMap;
 
 public class Indata {
 	
-	static HashMap<Long, Point> points = new HashMap<Long, Point>();
+	static HashMap<Long, Point> points = new HashMap<Long, Point>(4100000 * 3);
 	
-	static HashMap<Long, HashMap<Long, Long>> g = new HashMap<Long, HashMap<Long, Long>>();
+	static HashMap<Long, HashMap<Long, Long>> g = new HashMap<Long, HashMap<Long, Long>>(4100000 * 3);
 	
 	static void graph_read() throws FileNotFoundException
 	{
-		Scanner file = new Scanner(new FileReader("malta.in"));
+		Scanner file = new Scanner(new FileReader("france.in"));
 		String s;
 		String[]sarr;
+		int i = 0;///
 		while(file.hasNextLine()){
+			i++;
+			System.out.println(i);///
 			s = file.nextLine();
 			sarr = s.split("\\s");
 			if (sarr[0].contains("v")){
@@ -56,8 +62,8 @@ public class Indata {
 	}
 	
 	final static long INF = 2000000000;
-	static Map d = new HashMap<Long, Long>();
-	static Map p = new HashMap<Long,Long>();
+	static Map d = new HashMap<Long, Long>(points.keySet().size() * 3);
+	static Map p = new HashMap<Long, Long>(points.keySet().size() * 3);
 	
 	
 	
@@ -76,9 +82,10 @@ public class Indata {
 
 	static Queue<Pair> q = new PriorityQueue<Pair>(comparator);
 	
-	static void Dijkstra(long s)
+	static void Dijkstra(long s, double tr)
 	{
 		int n =  points.keySet().size();
+		double time = 1000 * 3600 * tr;
 		//vector < vector < pair<int,int> > > g (n);
 		//long s = 412523641L; // стартовая вершина
 		//vector<int> d (n, INF),  p (n);
@@ -91,25 +98,35 @@ public class Indata {
 		d.put(s,0L);
 		q.add(new Pair((long)d.get(s), s));
 		
-		
-		long len;
-		while (!q.isEmpty()) {
-			long v = q.peek().id;
+		int indicator_stop;
+		long len, dist1, dist2;
+		long curr = 0;
+		long v;
+		while (!q.isEmpty()) {//&& curr < time
+			v = q.peek().id;
+			curr = q.peek().dist;
+			//System.out.println(curr + " " + time);
 			q.remove();
+			if (curr > (long)d.get(v))
+				continue;
+			//if (curr > time)
+			//	break;
 			list_incid = g.get(v);
 			try{
 				for (long to : list_incid.keySet()) 
 				{
 					len = list_incid.get(to);
-					if ((long)d.get(v) + len < (long)d.get(to)) {
-							q.remove(new Pair((long)d.get(to), to));
-							d.put(to, (long)d.get(v) + len);
+					dist1 = (long)d.get(v);
+					dist2 = (long)d.get(to);
+					if (dist1 + len < dist2) {
+							//q.remove(new Pair((long)d.get(to), to));
+							d.put(to, dist1 + len);
 							p.put(to, v);
-							q.add(new Pair((long)d.get(to), to));
+							q.offer(new Pair(dist2, to));
 					}
 				}
 			}catch(Throwable t){
-				System.out.println(v+"!!!");
+				//System.out.println(v+"!!!");
 			}
 		}
 	}
@@ -118,21 +135,57 @@ public class Indata {
 	{
 		long curr = to;
 		while(curr != s)
-		{
-			Point po = points.get(curr);
-			System.out.println("[" + po.y + ", " + po.x + "]" + ",");
+		{	
+			System.out.println(curr);
 			curr = (long)p.get(curr);
+			
 		}
 		System.out.println(s);
 	}
-	public static void main(String []args) throws FileNotFoundException
+	
+	static void print_reachable_points(double t, long s) throws FileNotFoundException, UnsupportedEncodingException
 	{
-		long s = 246149772L;
-		long to = 246154693L;
-
+		HashSet<Long> reachable = new HashSet<Long>();
+		long dist;
+		double time = t * 60 * 60 * 1000;
+		
+		
+		for(long x: points.keySet()){
+			dist = (long)d.get(x);
+			if (dist != INF &&  dist <= time)
+			{
+				reachable.add(x);
+			}
+		}
+		
+		PrintWriter writer = new PrintWriter("points1.js", "UTF-8");	    
+		
+		writer.println("var plottedPoints = [\n");
+		
+		Point po;
+		for (long x:reachable)
+		{
+			 po = points.get(x);
+			writer.println("[" + po.y + ", " + po.x + "]" + ",");
+		}
+		
+		writer.println("];\n\n\n\n");
+		po = points.get(s);
+		writer.println("var centralMarker = [" + po.y + ", " + po.x + "];");
+		writer.close();
+	}
+	public static void main(String []args) throws FileNotFoundException, UnsupportedEncodingException
+	{
+		long s = 382061L;//122640L-idf;//382076L - france;//289880509L - malta;
+		//long to = 246154693L;
+		double time = 0.5;
 		graph_read();
-		Dijkstra(s);
-		print_path_from_to(s,to);
+		System.out.println("Graph read");
+		Dijkstra(s,time);
+		System.out.println("Happy New Year!!!");
+		print_reachable_points(time, s);
+		//print_path_from_to(s,to);
+		
 		
 		//System.out.println((points.get(1509529134L).y));
 		//System.out.println((g.get(150592286L)).get(246389249L)); 
