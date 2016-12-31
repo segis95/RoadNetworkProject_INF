@@ -18,19 +18,19 @@ import java.util.TreeMap;
 
 public class Indata {
 	
-	static HashMap<Long, Point> points = new HashMap<Long, Point>(4100000 * 3);
+	static HashMap<Long, Point> points = new HashMap<Long, Point>();
 	
-	static HashMap<Long, HashMap<Long, Long>> g = new HashMap<Long, HashMap<Long, Long>>(4100000 * 3);
+	static HashMap<Long, HashMap<Long, Long>> g = new HashMap<Long, HashMap<Long, Long>>();
 	
 	static void graph_read() throws FileNotFoundException
 	{
 		Scanner file = new Scanner(new FileReader("france.in"));
 		String s;
 		String[]sarr;
-		int i = 0;///
+		int i = 0;
 		while(file.hasNextLine()){
 			i++;
-			System.out.println(i);///
+			System.out.println(i);
 			s = file.nextLine();
 			sarr = s.split("\\s");
 			if (sarr[0].contains("v")){
@@ -82,10 +82,9 @@ public class Indata {
 
 	static Queue<Pair> q = new PriorityQueue<Pair>(comparator);
 	
-	static void Dijkstra(long s, double tr)
+	static void Dijkstra(long s)
 	{
 		int n =  points.keySet().size();
-		double time = 1000 * 3600 * tr;
 		//vector < vector < pair<int,int> > > g (n);
 		//long s = 412523641L; // стартовая вершина
 		//vector<int> d (n, INF),  p (n);
@@ -98,31 +97,26 @@ public class Indata {
 		d.put(s,0L);
 		q.add(new Pair((long)d.get(s), s));
 		
-		int indicator_stop;
-		long len, dist1, dist2;
-		long curr = 0;
+		
+		long len;
+		long curr;
 		long v;
-		while (!q.isEmpty()) {//&& curr < time
+		while (!q.isEmpty()) {
 			v = q.peek().id;
 			curr = q.peek().dist;
-			//System.out.println(curr + " " + time);
 			q.remove();
 			if (curr > (long)d.get(v))
 				continue;
-			//if (curr > time)
-			//	break;
 			list_incid = g.get(v);
 			try{
 				for (long to : list_incid.keySet()) 
 				{
 					len = list_incid.get(to);
-					dist1 = (long)d.get(v);
-					dist2 = (long)d.get(to);
-					if (dist1 + len < dist2) {
+					if ((long)d.get(v) + len < (long)d.get(to)) {
 							//q.remove(new Pair((long)d.get(to), to));
-							d.put(to, dist1 + len);
+							d.put(to, (long)d.get(v) + len);
 							p.put(to, v);
-							q.offer(new Pair(dist2, to));
+							q.offer(new Pair((long)d.get(to), to));
 					}
 				}
 			}catch(Throwable t){
@@ -176,14 +170,13 @@ public class Indata {
 	}
 	public static void main(String []args) throws FileNotFoundException, UnsupportedEncodingException
 	{
-		long s = 382061L;//122640L-idf;//382076L - france;//289880509L - malta;
+		long s = 382076L;//122640L-idf;//382076L - france;//289880509L - malta;
 		//long to = 246154693L;
-		double time = 0.5;
+
 		graph_read();
-		System.out.println("Graph read");
-		Dijkstra(s,time);
+		Dijkstra(s);
 		System.out.println("Happy New Year!!!");
-		print_reachable_points(time, s);
+		print_reachable_points(0.25, s);
 		//print_path_from_to(s,to);
 		
 		
