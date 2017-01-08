@@ -2,6 +2,8 @@ package test;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
@@ -11,6 +13,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
 
 
@@ -30,7 +33,8 @@ public class Indata {
 		int i = 0;
 		while(file.hasNextLine()){
 			i++;
-			System.out.println(i);
+			if (i % 1000000 == 0)
+				System.out.println(i);
 			s = file.nextLine();
 			sarr = s.split("\\s");
 			if (sarr[0].contains("v")){
@@ -168,17 +172,107 @@ public class Indata {
 		writer.println("var centralMarker = [" + po.y + ", " + po.x + "];");
 		writer.close();
 	}
-	public static void main(String []args) throws FileNotFoundException, UnsupportedEncodingException
+	
+	
+	public static void Dijkstra_to_file() throws IOException
+	{
+		FileWriter writer = new FileWriter("ready_dijkstra_distance.in");
+		FileWriter writer1 = new FileWriter("ready_dijkstra_pathTo.in");
+		int i = 0;
+		
+		for (long x: points.keySet())
+		{
+			writer.write(x + " " + (long)d.get(x) + '\n');
+			System.out.println("d" + ++i);
+		}
+		
+		writer.flush();
+		writer.close();
+		
+		i = 0;
+		for (Object x: p.keySet())
+		{
+			writer1.write(x + " " + (long)p.get(x) + '\n');
+			System.out.println("p" + ++i);
+		}
+		writer1.flush();
+		writer1.close();
+	}
+	
+	public static void Dijkstra_from_file() throws FileNotFoundException
+	{
+		long x, dist, pathTo;
+		String s[];
+		String str;
+		
+		Scanner file = new Scanner(new FileReader("ready_dijkstra_distance.in"));
+		
+		
+		while(file.hasNextLine())
+		{
+			str = file.nextLine();
+			if (str == "")
+				break;
+			s = str.split(" ");
+			x = Long.parseLong(s[0]);
+			dist = Long.parseLong(s[1]);
+			//System.out.println(x + " " + dist);
+			d.put(x,dist);
+		}
+		
+		file.close();
+		
+		
+		Scanner file1 = new Scanner(new FileReader("ready_dijkstra_pathTo.in"));
+		
+		while(file1.hasNextLine())
+		{
+			str = file1.nextLine();
+			if (str == "")
+				break;
+			s = str.split(" ");
+			x = Long.parseLong(s[0]);
+			pathTo = Long.parseLong(s[1]);
+			//System.out.println(x + " " + pathTo);
+			p.put(x, pathTo);
+		}
+		file1.close();
+	}
+	
+	public static void calculate_reachable_points1(long t)
+	{
+		long time = t * 1000 * 3600;
+		
+		int N = 0;
+		
+		for (long x: points.keySet())
+		{
+			if ((long)d.get(x) == time)
+				N++;
+		}
+		
+		System.out.println("Number of reachable points in " + t + " hour is: " + N);
+	}
+	
+	public static void main(String []args) throws IOException
 	{
 		long s = 382076L;//122640L-idf;//382076L - france;//289880509L - malta;
 		//long to = 246154693L;
-
-		graph_read();
-		Dijkstra(s);
-		System.out.println("Happy New Year!!!");
-		print_reachable_points(0.25, s);
-		//print_path_from_to(s,to);
 		
+		//double rt = 3820706.0;
+		//System.out.println(s == rt);
+		graph_read(); //***************
+		//Dijkstra(s);
+
+		//System.out.println("Happy New Year!!!");
+		//System.out.println(points.keySet().size());
+		//System.out.println(p.keySet().size());
+		//System.out.println(d.keySet().size());
+	    //Dijkstra_to_file();
+	    Dijkstra_from_file();//*************
+		//print_reachable_points(0.25, s);
+		//print_path_from_to(s,to);
+	    calculate_reachable_points1(2L);//***********
 		
 		//System.out.println((points.get(1509529134L).y));
 		//System.out.println((g.get(150592286L)).get(246389249L)); 
