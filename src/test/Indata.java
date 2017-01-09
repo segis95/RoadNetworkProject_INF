@@ -25,8 +25,11 @@ public class Indata {
 	
 	static HashMap<Long, HashMap<Long, Long>> g = new HashMap<Long, HashMap<Long, Long>>();
 	
+	public static long max_edge_len;
+	
 	static void graph_read() throws FileNotFoundException
 	{
+		long max_edge = 0;
 		Scanner file = new Scanner(new FileReader("france.in"));
 		String s;
 		String[]sarr;
@@ -47,6 +50,9 @@ public class Indata {
 				m = Long.parseLong(sarr[1]);
 				n = Long.parseLong(sarr[2]);
 				k = Long.parseLong(sarr[3]);
+				if (k > max_edge)
+					max_edge = k;
+				
 				if (g.get(m) == null){
 					g.put(m ,new HashMap<Long, Long>());
 					(g.get(m)).put(n,k);
@@ -63,11 +69,14 @@ public class Indata {
 		//System.out.println((g.get(150592286)).get(246389249)); 
 		
 		file.close();
+		
+		max_edge_len = max_edge;
 	}
 	
 	final static long INF = 2000000000;
 	static Map d = new HashMap<Long, Long>(points.keySet().size() * 3);
 	static Map p = new HashMap<Long, Long>(points.keySet().size() * 3);
+	
 	
 	
 	
@@ -239,19 +248,96 @@ public class Indata {
 		file1.close();
 	}
 	
-	public static void calculate_reachable_points1(long t)
+	
+	public static void count_reachable_points(long t1, long s)
 	{
-		long time = t * 1000 * 3600;
+		long time1 = t1 * 1000 * 60 - max_edge_len - 1000;
+		long time2 = t1 * 1000 * 60;
 		
-		int N = 0;
+		Set<Coordinate> reachable_coordinates = new HashSet<Coordinate>();
 		
-		for (long x: points.keySet())
+		long dist;
+		for (long x : points.keySet())
 		{
-			if ((long)d.get(x) == time)
-				N++;
+			dist = (long)d.get(x);
+			if (dist > time1 && dist <= time2)
+			{
+				
+				if (dist == time2)
+					reachable_coordinates.add(new Coordinate(x,x,0));
+				else{
+					//System.out.println("Hello!!!");
+					if (g.get(x) == null || g.get(x).keySet().isEmpty())
+						continue;
+					else
+						for (long y : g.get(x).keySet())
+						{
+							if (dist + g.get(x).get(y) > time2){
+								reachable_coordinates.add(new Coordinate(x,y, dist + g.get(x).get(y) - time2));
+								//System.out.println(x + "," + y + ", " + (dist + g.get(x).get(y) - time2));}
+							}
+						}
+					}
+			}
+		}
+		/*
+		for (Coordinate x:reachable_coordinates )
+		{
+			System.out.println("[" + points.get(x.from).y + "," + points.get(x.from).x + "],");
+		}
+		*/
+		//System.out.println("Number of points accessible from sourse in " + t1 + " min(s) is " + reachable_coordinates.size());
+		System.out.println(t1 + "   " + reachable_coordinates.size());
+	}
+	
+	public static void count_reachable_points(long t1, long t2, long s)
+	{
+		Set<Coordinate> reachable_coordinates = new HashSet<Coordinate>();
+		
+		long time1 = t1 * 1000 * 60;
+		long time2 = t2 * 1000 * 60;
+		long time3 = t2 * 1000 * 60 + max_edge_len + 100000;
+		
+		long dist, distance;
+		long current_point, previous_point;
+		for (long x : points.keySet())
+		{
+			dist = (long)d.get(x);
+			if (dist >= time2 && dist < time3)
+			{	
+				current_point = x;
+				previous_point = (long)p.get(current_point);
+				distance = (long)d.get(current_point);
+				//System.out.println("NewPoint****************");
+				
+				while(distance >= time1 && current_point != s)
+				{ 
+					
+					//System.out.println(current_point);
+					if ((long)d.get(previous_point) <= time1){
+						reachable_coordinates.add(new Coordinate(previous_point, current_point, time1 - (long)d.get(previous_point) ));
+						//System.out.println(previous_point + " " +  current_point + " " + (time1 - (long)d.get(previous_point)) + " " + points.get(previous_point).y + ", " + points.get(previous_point).x);
+						break;
+					}
+					else
+					{
+						current_point = previous_point;
+						if (current_point == s)
+							break;
+						previous_point = (long)p.get(current_point);
+						distance = (long)d.get(current_point);
+					}
+				}
+			}
 		}
 		
-		System.out.println("Number of reachable points in " + t + " hour is: " + N);
+		for (Coordinate x:reachable_coordinates )
+		{
+			System.out.println("[" + points.get(x.from).y + "," + points.get(x.from).x + "],");
+		}
+		System.out.println("Number of reachable points from source " + s + " in " + t1 + " min(s) (if destination is more than in " + t2 +" min(s)) is: " + reachable_coordinates.size());
+		//System.out.println();
+		
 	}
 	
 	public static void main(String []args) throws IOException
@@ -271,9 +357,17 @@ public class Indata {
 	    //Dijkstra_to_file();
 	    Dijkstra_from_file();//*************
 		//print_reachable_points(0.25, s);
-		//print_path_from_to(s,to);
-	    calculate_reachable_points1(2L);//***********
+		//print_path_from_to(s, 427827939L);
+	    for (long i = 1; i < 49; i++)
+	    	count_reachable_points(i * 10L ,s);//***********
+		//System.out.println((long)d.get(427827939L));
+		//Coordinate c1 = new Coordinate(1,2,1100000000);
+		//Coordinate c2 = new Coordinate(1,2,1100000000);
 		
+		//Set setty = new HashSet<Integer>();
+		//setty.add(c1);
+		//setty.add(c2);
+		//System.out.println(setty.size());
 		//System.out.println((points.get(1509529134L).y));
 		//System.out.println((g.get(150592286L)).get(246389249L)); 
 		
