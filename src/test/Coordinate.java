@@ -2,6 +2,9 @@ package test;
 
 public class Coordinate {
 	
+	//This class describes the point on the edge
+	//Edge is represented by the names of the first and the last points
+	///x describes the precise position of this edge in millisecond
 	long from;
 	long to;
 	long x;
@@ -12,7 +15,8 @@ public class Coordinate {
 		x = x3;
 	}
 
-	
+	//we have to override these methods to compare 
+	//Coordinates correctly
 	@Override
 	public int hashCode() {
 	    final long prime = 31;
